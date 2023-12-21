@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Flight</title>
+    <script type="module" src="https://threejs.org/build/three.module.js"></script>
+</head>
+<body style="background-color:black;">
+    <script type="module">
+    
+import * as THREE from 'https://threejs.org/build/three.module.js';
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 5;
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const starsGeometry = new THREE.BufferGeometry();
+const starsMaterial = new THREE.PointsMaterial({ color: 0xFFFFFF, size: 1.5 });
+
+const starsVertices = [];
+for (let i = 0; i < 10000; i++) {
+    const x = (Math.random() - 0.5) * 2000;
+    const y = (Math.random() - 0.5) * 2000;
+    const z = (Math.random() - 0.5) * 2000;
+    starsVertices.push(x, y, z);
+}
+
+const generateStar = () => {
+    return {
+        x: (Math.random() - 0.5) * 2000,
+        y: (Math.random() - 0.5) * 2000,
+        z: (Math.random() - 0.5) * 2000,
+    };
+};
+
+starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+const stars = new THREE.Points(starsGeometry, starsMaterial);
+scene.add(stars);
+
+
+// Move stars in the animation loop
+const animateStars = () => {
+    const starsPositions = starsGeometry.attributes.position.array;
+
+    for (let i = 0; i < starsPositions.length; i += 3) {
+        starsPositions[i + 2] += 0.1;  // Adjust the speed of star movement
+        // Reset the position to a new random position when star becomes invisible
+		if (starsPositions[i + 2] > -camera.position.z) {
+            const newStar = generateStar();
+            starsPositions[i] = newStar.x;
+            starsPositions[i + 1] = newStar.y;
+            starsPositions[i + 2] = -newStar.z;
+        }
+    }
+
+    starsGeometry.attributes.position.needsUpdate = true;
+};
+
+
+const animateCamera = () => {
+    // Adjust the speed and direction of camera movement based on your preference
+	// camera.translateZ(-10);
+
+    camera.position.z -= 0.01;
+
+    // Reset the camera position to create a seamless loop
+    if (camera.position.z < -2000) {
+        camera.position.z = 1;
+    }
+
+};
+
+const animate = () => {
+    requestAnimationFrame(animate);
+
+    // Add animation logic here
+	animateStars();
+    animateCamera();
+	
+	renderer.render(scene, camera);
+};
+
+animate();
+
+	</script>
+</body>
+</html>
